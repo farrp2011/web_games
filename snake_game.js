@@ -70,6 +70,14 @@ function setUp()
     
     gameObj.timeObj = setInterval(mainLoop, GAME_SPEED);
     spawnFood();//need to make some random food
+    display();
+    var c = document.getElementById(CANVAS_ID);
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.font = "30px Comic Sans MS";
+    var txt = "Use Arrow Keys\nTo Start";
+
+    ctx.fillText(txt,c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
 }
 
 
@@ -344,7 +352,7 @@ document.onkeydown = function(e) {
 };
 
 setUp();
-display();
+
 
 //game starting time
 
