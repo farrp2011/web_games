@@ -84,6 +84,11 @@ function setUp()
 
 function display()
 {
+    if(gameObj.timeObj === null)//if the time obj is not working don't play the game
+    {
+        return ;
+    }
+    
     var c = document.getElementById(CANVAS_ID);
     var ctx = c.getContext("2d");
     
@@ -282,6 +287,7 @@ function mainLoop()
     if(lost === true)
     {
         clearInterval(gameObj.timeObj);//stop the loop
+        gameObj.timeObj = null;
         //display the Game Over
         var c = document.getElementById(CANVAS_ID);
         var ctx = c.getContext("2d");
