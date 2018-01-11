@@ -27,7 +27,7 @@ const ARROW_DOWN = 40;
 const ARROW_RIGHT = 39;
 const ARROW_LEFT = 37;
 
-const GAME_SPEED = 300;// quater second
+const GAME_SPEED = 200;// quater second
 const BOX_SIZE = 25;
 
 const BACKGROUND_COLOR = "#0acf00";//green
@@ -42,6 +42,22 @@ const HUB_AREA = 50;//this is tacked on to the bottom of the screen
 const WIDTH = PLAY_AREA;
 const HEIGHT = PLAY_AREA + HUB_AREA;
 
+const SCORE_NAME =
+        [
+            {name:"Worm",score :1},
+            {name:"Garter Snake",score :5},
+            {name:"Milk Snake",score :10},
+            {name:"Corn Snake",score :15},
+            {name:"Pine Snake",score :20},
+            {name:"Green Tree Sanke",score :30},
+            {name:"Coral Snake",score :40},
+            {name:"Papuan Python",score :50},
+            {name:"Yellow Anaconda",score :65},
+            {name:"Soa Constrictor",score :80},
+            {name:"Green Anaconda",score :100},
+            {name:"Eater Of Worlds",score :140}
+
+        ];
 
 var gameObj;
 
@@ -192,8 +208,24 @@ function display()
     ctx.fillStyle = "white";
     ctx.font = "30px Comic Sans MS";
     var txt = "Game Over";
+    
+    
+    
 
-    ctx.fillText("Score: "+gameObj.score,c.width/2 - Math.round(ctx.measureText(txt).width/2), PLAY_AREA+30);
+    
+    ctx.fillText("Score: "+gameObj.score,c.width - (c.width/4 + Math.round(ctx.measureText(txt).width/2)), PLAY_AREA+30);
+    
+    txt = SCORE_NAME[0].name;
+    for(var i = 0 ; SCORE_NAME.length ; i++)
+    {
+        if(gameObj.score < SCORE_NAME[i].score)
+        {
+            txt = SCORE_NAME[i].name;
+            break;
+        }
+    }
+    
+    ctx.fillText(txt,c.width/4 - Math.round(ctx.measureText(txt).width/2), PLAY_AREA+30);
 
     
 }
@@ -214,7 +246,7 @@ function mainLoop()
         //we start by making a new body part
         //then we add it after everthing has moved
         
-        newBodyPart = {x:gameObj.body[gameObj.body.length-1].x,y:gameObj.body[gameObj.body.length-1].y}
+        newBodyPart = {x:gameObj.body[gameObj.body.length-1].x,y:gameObj.body[gameObj.body.length-1].y};
     }
     
     
@@ -357,7 +389,7 @@ document.onkeydown = function(e) {
     display();
 };
 
-setUp();
+setUp();//this kick everything off
 
 
 //game starting time
