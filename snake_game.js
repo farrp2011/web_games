@@ -59,314 +59,292 @@ const SCORE_NAME =
 
         ];
 
-var gameObj;
-
-function createGameObj()
-{
-    var gameObj =
-        {
-            direction: null,//when it is not null the game will start
-            score: 0,
-            body:[{x:9,y:9}],
-            timeObj:null,
-            addToBody: true,
-            food:{x:0,y:0}
-        };
-
-    return gameObj;
-}
-
-function setUp()
-{
-    var hookEle = document.getElementById(HTML_HOOK);
-    hookEle.innerHTML = `
-            <canvas id="`+CANVAS_ID+`" width="`+WIDTH+`" height="`
-           +HEIGHT+`"> </canvas><br/>`;
-    gameObj = createGameObj();
-    
-    gameObj.timeObj = setInterval(mainLoop, GAME_SPEED);
-    spawnFood();//need to make some random food
-    display();
-    var c = document.getElementById(CANVAS_ID);
-    var ctx = c.getContext("2d");
-    ctx.fillStyle = "white";
-    ctx.font = "30px Comic Sans MS";
-    var txt = "Use Arrow Keys\nTo Start";
-
-    ctx.fillText(txt,c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
-}
-
-
-
-function display()
-{
-    if(gameObj.timeObj === null)//if the time obj is not working don't play the game
-    {
-        return ;
-    }
-    
-    var c = document.getElementById(CANVAS_ID);
-    var ctx = c.getContext("2d");
-    
-    //background
-    ctx.fillStyle = BACKGROUND_COLOR;
-    ctx.fillRect(0,0,PLAY_AREA,PLAY_AREA);
-    
-    //Hub
-    ctx.fillStyle = HUB_COLOR;
-    ctx.fillRect(0,PLAY_AREA,PLAY_AREA,HUB_AREA);
-    
-    //fake food
-    ctx.fillStyle = FOOD_COLOR;
-    ctx.fillRect(gameObj.food.x*BOX_SIZE,gameObj.food.y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
-    
-    //draw player
-    //draw the head first
-    ctx.fillStyle = PLAYER_COLOR;
-    ctx.fillRect(gameObj.body[0].x*BOX_SIZE,gameObj.body[0].y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
-    
-    var eyeCenX = 0;
-    var eyeCenY = 0;
-    var pupilCenX = 0;
-    var pupilCenY = 0;
-    
-    //then we draw the eye
-    //Make Eye... eye will show the dirction of the snake
-    switch(gameObj.direction)
-    {
-        case ARROW_UP:
-            //console.log("Going Up");
-            eyeCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            eyeCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/4);
-            pupilCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/8);
-            break;
-        case ARROW_DOWN:
-            //console.log("Going Down");
-            eyeCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            eyeCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE * .75);
-            pupilCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE * .875);
-            break;
-        case ARROW_LEFT:
-            //console.log("Going Left");
-            eyeCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/4);
-            eyeCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/8);
-            pupilCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            break;
-        case ARROW_RIGHT:
-            //console.log("Going Right");
-            eyeCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE * .75);
-            eyeCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE * .875);
-            pupilCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            break;
-        case null:
-            //console.log("waiting for game to start");
-            eyeCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            eyeCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenX = gameObj.body[0].x *BOX_SIZE + (BOX_SIZE/2);
-            pupilCenY = gameObj.body[0].y *BOX_SIZE + (BOX_SIZE/2);
-            break;      
-    }
-    //Now we know where the center is we can paint
-    //white of the eye
-    ctx.beginPath();
-    ctx.arc(eyeCenX,eyeCenY,(BOX_SIZE/4),0,2*Math.PI);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    
-    //pupil Time
-    ctx.beginPath();
-    ctx.arc(pupilCenX,pupilCenY,(BOX_SIZE/8),0,2*Math.PI);
-    ctx.fillStyle = "black";
-    ctx.fill();
-    //finly we draw the rest of the body
-    ctx.fillStyle = PLAYER_COLOR;
-    for(var i = 1; i < gameObj.body.length ; i++)
-    {
-        ctx.fillRect(gameObj.body[i].x*BOX_SIZE,gameObj.body[i].y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
-    }
-    
-    //draw the gridlines
-    for(var i = 0 ; i*BOX_SIZE < PLAY_AREA+1 ; i++)
-    {
-        //Vertical Lines
-        ctx.moveTo(i*BOX_SIZE,0);
-        ctx.lineTo(i*BOX_SIZE,PLAY_AREA);
-        ctx.stroke(); 
-        
-        //Horizontal Lines
-        ctx.moveTo(0,i*BOX_SIZE);
-        ctx.lineTo(PLAY_AREA,i*BOX_SIZE);
-        ctx.stroke();
-    }
-    
-    //display score
-    
-    ctx.fillStyle = "white";
-    ctx.font = "30px Comic Sans MS";
-    var txt = "Game Over";
-    
-    
-    
-
-    
-    ctx.fillText("Score: "+gameObj.score,c.width - (c.width/4 + Math.round(ctx.measureText(txt).width/2)), PLAY_AREA+30);
-    
-    txt = SCORE_NAME[0].name;
-    for(var i = 0 ; SCORE_NAME.length ; i++)
-    {
-        if(gameObj.score < SCORE_NAME[i].score)
-        {
-            txt = SCORE_NAME[i].name;
-            break;
-        }
-    }
-    
-    ctx.fillText(txt,c.width/4 - Math.round(ctx.measureText(txt).width/2), PLAY_AREA+30);
-
-    
-}
-
 function mainLoop()
 {
-    if(gameObj.direction === null)//if the player has not sected a dirction don't do anything
+    //I need this because the 'setInterval' function won't work on object methods
+    gameObj.mainLoop();
+}
+
+var gameObj = {
+    direction: null,//when it is not null the game will start
+    score: 0,
+    body:[{x:9,y:9}],
+    timeObj:null,
+    addToBody: true,
+    food:{x:0,y:0},
+    setUp: function()
     {
-        return ;
-    }
-    //console.log("we are now playing");
-    
-    var newBodyPart = null;
-    
-    if(gameObj.addToBody === true)//we need to add to the snake
+        var hookEle = document.getElementById(HTML_HOOK);
+        hookEle.innerHTML = `
+                <canvas id="`+CANVAS_ID+`" width="`+WIDTH+`" height="`
+               +HEIGHT+`"> </canvas><br/>`;
+
+        this.timeObj = setInterval(mainLoop, GAME_SPEED);//this is un-godly annoying! 
+        this.spawnFood();//need to make some random food
+        this.display();
+        var c = document.getElementById(CANVAS_ID);
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "white";
+        ctx.font = "30px Comic Sans MS";
+        var txt = "Use Arrow Keys\nTo Start";
+
+        ctx.fillText(txt,c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
+    },
+    display: function()
     {
-        gameObj.addToBody = false;
-        //we start by making a new body part
-        //then we add it after everthing has moved
-        
-        newBodyPart = {x:gameObj.body[gameObj.body.length-1].x,y:gameObj.body[gameObj.body.length-1].y};
-    }
-    
-    
-    
-    
-    
-    for(var i = gameObj.body.length -1 ; i > 0 ; i--)
-    {//move the rest of the body by copying what happed in front of it
-        
-        //console.log("index:"+i+" is being moved");
-        gameObj.body[i].x = gameObj.body[i-1].x;
-        gameObj.body[i].y = gameObj.body[i-1].y;
-    }
-    
-    if(newBodyPart !== null)//if newBodypart is not null we need to add it
-    {
-        gameObj.body.push(newBodyPart);
-    }
-    
-    
-    switch (gameObj.direction)//move the head
-    {
-        case ARROW_UP:
-            gameObj.body[0].y--;
-            break;
-        case ARROW_DOWN:
-            gameObj.body[0].y++;
-            break;
-        case ARROW_LEFT:
-            gameObj.body[0].x--;
-            break;
-        case ARROW_RIGHT:
-            gameObj.body[0].x++;
-            break;
-    }
-    
-    
-    if(gameObj.body[0].x === gameObj.food.x && gameObj.body[0].y === gameObj.food.y)
-    {
-        //console.log("Yum!!!");
-        gameObj.score++;//your winning!!!!!
-        spawnFood();//We need some new food
-        gameObj.addToBody = true;
-    }
-    
-    var lost = false;
-    
-    
-    
-    //did we lose????
-    if(gameObj.body[0].x < 0 ||
-            gameObj.body[0].y < 0 ||
-            gameObj.body[0].y > PLAY_AREA/BOX_SIZE -1 ||
-            gameObj.body[0].x > PLAY_AREA/BOX_SIZE -1)
-    {
-        //console.log("you lose");
-        lost = true;
-    }
-    
-    for(var i = 1/*don't care about the head*/; i < gameObj.body.length ; i++)
-    {
-        if(gameObj.body[0].x === gameObj.body[i].x &&
-                gameObj.body[0].y === gameObj.body[i].y)
+        if(this.timeObj === null)//if the time obj is not working don't play the game
+        {
+            return ;
+        }
+        var c = document.getElementById(CANVAS_ID);
+        var ctx = c.getContext("2d");
+        //background
+        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillRect(0,0,PLAY_AREA,PLAY_AREA);
+
+        //Hub
+        ctx.fillStyle = HUB_COLOR;
+        ctx.fillRect(0,PLAY_AREA,PLAY_AREA,HUB_AREA);
+
+        //fake food
+        ctx.fillStyle = FOOD_COLOR;
+        ctx.fillRect(this.food.x*BOX_SIZE,this.food.y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
+
+        //draw player
+        //draw the head first
+        ctx.fillStyle = PLAYER_COLOR;
+        ctx.fillRect(this.body[0].x*BOX_SIZE,this.body[0].y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
+
+        var eyeCenX = 0;
+        var eyeCenY = 0;
+        var pupilCenX = 0;
+        var pupilCenY = 0;
+
+        //then we draw the eye
+        //Make Eye... eye will show the dirction of the snake
+        switch(this.direction)
+        {
+            case ARROW_UP:
+                //console.log("Going Up");
+                eyeCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                eyeCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/4);
+                pupilCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/8);
+                break;
+            case ARROW_DOWN:
+                //console.log("Going Down");
+                eyeCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                eyeCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE * .75);
+                pupilCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE * .875);
+                break;
+            case ARROW_LEFT:
+                //console.log("Going Left");
+                eyeCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/4);
+                eyeCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/8);
+                pupilCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                break;
+            case ARROW_RIGHT:
+                //console.log("Going Right");
+                eyeCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE * .75);
+                eyeCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE * .875);
+                pupilCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                break;
+            case null:
+                //console.log("waiting for game to start");
+                eyeCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                eyeCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenX = this.body[0].x *BOX_SIZE + (BOX_SIZE/2);
+                pupilCenY = this.body[0].y *BOX_SIZE + (BOX_SIZE/2);
+                break;      
+        }
+        //Now we know where the center is we can paint
+        //white of the eye
+        ctx.beginPath();
+        ctx.arc(eyeCenX,eyeCenY,(BOX_SIZE/4),0,2*Math.PI);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        //pupil Time
+        ctx.beginPath();
+        ctx.arc(pupilCenX,pupilCenY,(BOX_SIZE/8),0,2*Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+        //finly we draw the rest of the body
+        ctx.fillStyle = PLAYER_COLOR;
+        for(var i = 1; i < this.body.length ; i++)
+        {
+            ctx.fillRect(this.body[i].x*BOX_SIZE,this.body[i].y*BOX_SIZE,BOX_SIZE,BOX_SIZE);
+        }
+
+        //draw the gridlines
+        for(var i = 0 ; i*BOX_SIZE < PLAY_AREA+1 ; i++)
+        {
+            //Vertical Lines
+            ctx.moveTo(i*BOX_SIZE,0);
+            ctx.lineTo(i*BOX_SIZE,PLAY_AREA);
+            ctx.stroke(); 
+
+            //Horizontal Lines
+            ctx.moveTo(0,i*BOX_SIZE);
+            ctx.lineTo(PLAY_AREA,i*BOX_SIZE);
+            ctx.stroke();
+        }
+        //display score
+        ctx.fillStyle = "white";
+        ctx.font = "30px Comic Sans MS";
+        var txt = "Game Over";
+
+        ctx.fillText("Score: "+this.score,c.width - (c.width/4 + Math.round(ctx.measureText(txt).width/2)), PLAY_AREA+30);
+
+        txt = SCORE_NAME[0].name;
+        for(var i = 0 ; SCORE_NAME.length ; i++)
+        {
+            if(this.score < SCORE_NAME[i].score)
+            {
+                txt = SCORE_NAME[i].name;
+                break;
+            }
+        }
+        ctx.fillText(txt,c.width/4 - Math.round(ctx.measureText(txt).width/2), PLAY_AREA+30);
+    },
+    mainLoop: function()
+        {
+                if(this.direction === null)//if the player has not sected a dirction don't do anything
+        {
+            return ;
+        }
+        //console.log("we are now playing");
+
+        var newBodyPart = null;
+
+        if(this.addToBody === true)//we need to add to the snake
+        {
+            this.addToBody = false;
+            //we start by making a new body part
+            //then we add it after everthing has moved
+
+            newBodyPart = {x:this.body[this.body.length-1].x,y:this.body[this.body.length-1].y};
+        }
+
+
+
+
+
+        for(var i = this.body.length -1 ; i > 0 ; i--)
+        {//move the rest of the body by copying what happed in front of it
+
+            //console.log("index:"+i+" is being moved");
+            this.body[i].x = this.body[i-1].x;
+            this.body[i].y = this.body[i-1].y;
+        }
+
+        if(newBodyPart !== null)//if newBodypart is not null we need to add it
+        {
+            this.body.push(newBodyPart);
+        }
+
+
+        switch (this.direction)//move the head
+        {
+            case ARROW_UP:
+                this.body[0].y--;
+                break;
+            case ARROW_DOWN:
+                this.body[0].y++;
+                break;
+            case ARROW_LEFT:
+                this.body[0].x--;
+                break;
+            case ARROW_RIGHT:
+                this.body[0].x++;
+                break;
+        }
+
+        if(this.body[0].x === this.food.x && this.body[0].y === this.food.y)
+        {
+            //console.log("Yum!!!");
+            this.score++;//your winning!!!!!
+            this.spawnFood();//We need some new food
+            this.addToBody = true;
+        }
+
+        var lost = false;
+
+        //did we lose????
+        if(this.body[0].x < 0 ||
+                this.body[0].y < 0 ||
+                this.body[0].y > PLAY_AREA/BOX_SIZE -1 ||
+                this.body[0].x > PLAY_AREA/BOX_SIZE -1)
         {
             //console.log("you lose");
             lost = true;
         }
-    }
-    
-    if(lost === true)
+
+        for(var i = 1/*don't care about the head*/; i < this.body.length ; i++)
+        {
+            if(this.body[0].x === this.body[i].x &&
+                    this.body[0].y === this.body[i].y)
+            {
+                //console.log("you lose");
+                lost = true;
+            }
+        }
+
+        if(lost === true)
+        {
+            clearInterval(this.timeObj);//stop the loop
+            this.timeObj = null;
+            //display the Game Over
+            var c = document.getElementById(CANVAS_ID);
+            var ctx = c.getContext("2d");
+            ctx.fillStyle = "white";
+            ctx.font = "70px Comic Sans MS";
+            var txt = "Game Over";
+
+            ctx.fillText("Game Over",c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
+        }
+        else
+        {//else everything is fine
+            this.display();
+        }
+    },
+    spawnFood: function()
     {
-        clearInterval(gameObj.timeObj);//stop the loop
-        gameObj.timeObj = null;
-        //display the Game Over
-        var c = document.getElementById(CANVAS_ID);
-        var ctx = c.getContext("2d");
-        ctx.fillStyle = "white";
-        ctx.font = "70px Comic Sans MS";
-        var txt = "Game Over";
-        
-        ctx.fillText("Game Over",c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
+        var newX;
+        var newY;
+
+        var goodPoint = false;
+
+        while(goodPoint === false)
+        {
+            goodPoint = true;
+            newX = randomInt(0,PLAY_AREA/BOX_SIZE-1);
+            newY = randomInt(0,PLAY_AREA/BOX_SIZE-1); 
+            for(var i = 0 ; i < this.body.length ; i++ )
+            {
+                if(newX === this.body[i].x && newY === this.body[i].y)
+                {//if we can get all the way through this we are golden
+                    goodPoint = false;
+                    break;
+                }
+            }
+        }
+
+        this.food.x = newX;
+        this.food.y = newY;
     }
-    else
-    {//else everything is fine
-        display();
-    }
     
-    
-    
-}
+};
+
 function randomInt(min,max)
 {
     return Math.floor(Math.random()*(max-min+1)+min);
 }
 
-function spawnFood()
-{
-    var newX;
-    var newY;
-    
-    var goodPoint = false;
-    
-    while(goodPoint === false)
-    {
-        goodPoint = true;
-        newX = randomInt(0,PLAY_AREA/BOX_SIZE-1);
-        newY = randomInt(0,PLAY_AREA/BOX_SIZE-1); 
-        for(var i = 0 ; i < gameObj.body.length ; i++ )
-        {
-            if(newX === gameObj.body[i].x && newY === gameObj.body[i].y)
-            {//if we can get all the way through this we are golden
-                goodPoint = false;
-                break;
-            }
-        }
-    }
-    
-    gameObj.food.x = newX;
-    gameObj.food.y = newY;
-}
+
 
 //this function reads what keys where pressed
 document.onkeydown = function(e) {
@@ -386,11 +364,9 @@ document.onkeydown = function(e) {
             gameObj.direction = ARROW_RIGHT;
             break;
     }
-    display();
+    gameObj.display();
 };
 
-setUp();//this kick everything off
-
-
+gameObj.setUp();
 //game starting time
 
