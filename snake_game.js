@@ -22,10 +22,10 @@
 const HTML_HOOK = "snake_game";
 const CANVAS_ID = "canvas_id_50";
 
-const ARROW_UP = 38;
-const ARROW_DOWN = 40;
-const ARROW_RIGHT = 39;
-const ARROW_LEFT = 37;
+const ARROW_UP = 87;
+const ARROW_DOWN = 83;
+const ARROW_RIGHT = 68;
+const ARROW_LEFT = 65;
 
 const GAME_SPEED = 200;// quater second
 const BOX_SIZE = 25;
@@ -86,7 +86,7 @@ var gameObj = {
         var ctx = c.getContext("2d");
         ctx.fillStyle = "white";
         ctx.font = "30px Comic Sans MS";
-        var txt = "Use Arrow Keys\nTo Start";
+        var txt = "Use W,A,S,D Keys\nTo Start";
 
         ctx.fillText(txt,c.width/2 - Math.round(ctx.measureText(txt).width/2), c.height/2);
     },
